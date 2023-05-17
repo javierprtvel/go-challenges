@@ -26,11 +26,11 @@ type GetSomeAdsResponse struct {
 }
 
 type AdService struct {
-	repository repository.AdRepository
+	repository repository.InMemoryAdRepository
 }
 
 func InitAdService() AdService {
-	return AdService{repository.AdRepository{}}
+	return AdService{repository.InMemoryAdRepository{}}
 }
 
 func (adService AdService) CreateAd(request CreateAdRequest) {

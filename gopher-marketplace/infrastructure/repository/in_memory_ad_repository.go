@@ -2,11 +2,15 @@ package repository
 
 import (
 	"github.mpi-internal.com/javier-porto/learning-go/domain"
+	"time"
 )
 
-type AdRepository map[string]domain.Ad
+type InMemoryAdRepository map[string]domain.Ad
 
-func (ar AdRepository) Persist(ad domain.Ad) domain.Ad {
+func (ar InMemoryAdRepository) Persist(ad domain.Ad) domain.Ad {
+	if ad.Date == (time.Time{}) {
+		ad.Date = time.Now()
+	}
 	ar[ad.Id] = ad
 	return domain.Ad{
 		Id:          ad.Id,
@@ -17,7 +21,7 @@ func (ar AdRepository) Persist(ad domain.Ad) domain.Ad {
 	}
 }
 
-func (ar AdRepository) FindById(id string) domain.Ad {
+func (ar InMemoryAdRepository) FindById(id string) domain.Ad {
 	ad := ar[id]
 	return domain.Ad{
 		Id:          ad.Id,
@@ -30,7 +34,7 @@ func (ar AdRepository) FindById(id string) domain.Ad {
 
 const sliceMaxSize = 5
 
-func (ar AdRepository) Slice() []domain.Ad {
+func (ar InMemoryAdRepository) Slice() []domain.Ad {
 	s := make([]domain.Ad, 0)
 	i := 0
 	for _, ad := range ar {
