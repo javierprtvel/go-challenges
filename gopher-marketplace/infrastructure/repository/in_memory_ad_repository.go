@@ -5,9 +5,13 @@ import (
 	"time"
 )
 
-type InMemoryAdRepository map[string]domain.Ad
+type inMemoryAdRepository map[string]domain.Ad
 
-func (ar InMemoryAdRepository) Persist(ad domain.Ad) domain.Ad {
+func NewInMemoryAdRepository() inMemoryAdRepository {
+	return make(inMemoryAdRepository)
+}
+
+func (ar inMemoryAdRepository) Persist(ad domain.Ad) domain.Ad {
 	if ad.Date == (time.Time{}) {
 		ad.Date = time.Now()
 	}
@@ -21,7 +25,7 @@ func (ar InMemoryAdRepository) Persist(ad domain.Ad) domain.Ad {
 	}
 }
 
-func (ar InMemoryAdRepository) FindById(id string) domain.Ad {
+func (ar inMemoryAdRepository) FindById(id string) domain.Ad {
 	ad := ar[id]
 	return domain.Ad{
 		Id:          ad.Id,
@@ -34,7 +38,7 @@ func (ar InMemoryAdRepository) FindById(id string) domain.Ad {
 
 const sliceMaxSize = 5
 
-func (ar InMemoryAdRepository) Slice() []domain.Ad {
+func (ar inMemoryAdRepository) Slice() []domain.Ad {
 	s := make([]domain.Ad, 0)
 	i := 0
 	for _, ad := range ar {

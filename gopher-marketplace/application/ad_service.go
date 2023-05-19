@@ -3,7 +3,7 @@ package application
 import (
 	"github.com/google/uuid"
 	"github.mpi-internal.com/javier-porto/learning-go/domain"
-	"github.mpi-internal.com/javier-porto/learning-go/infrastructure/repository"
+	"github.mpi-internal.com/javier-porto/learning-go/domain/repository"
 	"time"
 )
 
@@ -26,11 +26,11 @@ type GetSomeAdsResponse struct {
 }
 
 type AdService struct {
-	repository repository.InMemoryAdRepository
+	repository repository.AdRepository
 }
 
-func InitAdService() AdService {
-	return AdService{repository.InMemoryAdRepository{}}
+func NewAdService(adRepository repository.AdRepository) AdService {
+	return AdService{adRepository}
 }
 
 func (adService AdService) CreateAd(request CreateAdRequest) {

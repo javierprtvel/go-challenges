@@ -75,7 +75,7 @@ func TestInMemoryAdRepository_Persist(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			inMemoryAdRepository := InMemoryAdRepository{}
+			inMemoryAdRepository := inMemoryAdRepository{}
 
 			returnedValue := inMemoryAdRepository.Persist(tc.input)
 
@@ -154,7 +154,7 @@ func TestInMemoryAdRepository_FindById(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			var inMemoryAdRepository InMemoryAdRepository = existingAds
+			var inMemoryAdRepository inMemoryAdRepository = existingAds
 
 			actual := inMemoryAdRepository.FindById(tc.input.id)
 
@@ -214,7 +214,7 @@ func TestInMemoryAdRepository_Slice(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			var inMemoryAdRepository InMemoryAdRepository = tc.input
+			var inMemoryAdRepository inMemoryAdRepository = tc.input
 
 			actual := inMemoryAdRepository.Slice()
 			assert.Equal(t, tc.expected, actual)
