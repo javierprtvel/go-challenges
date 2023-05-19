@@ -19,6 +19,9 @@ func main() {
 	adId := cli.AskUserForAdId()
 	userAd := adService.GetAd(application.GetAdRequest{Id: adId})
 	cli.ShowAdToUser(userAd)
+
+	adController := client.NewAdController(adService)
+	adController.Init()
 }
 
 func setInitialAdCatalog(adService application.AdService) {
