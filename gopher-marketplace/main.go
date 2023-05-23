@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.mpi-internal.com/javier-porto/learning-go/application"
 	"github.mpi-internal.com/javier-porto/learning-go/infrastructure/client"
 	"github.mpi-internal.com/javier-porto/learning-go/infrastructure/repository"
@@ -9,19 +8,10 @@ import (
 
 func main() {
 	adService := application.NewAdService(repository.NewInMemoryAdRepository())
-
 	setInitialAdCatalog(adService)
-	adListing := adService.GetSomeAds()
-	fmt.Println("Ad listing:", adListing.Ads)
-	fmt.Println("Ad listing size:", len(adListing.Ads))
 
-	cli := client.CLI{}
-	adId := cli.AskUserForAdId()
-	userAd := adService.GetAd(application.GetAdRequest{Id: adId})
-	cli.ShowAdToUser(userAd)
-
-	adController := client.NewAdController(adService)
-	adController.Init()
+	server := client.SetupServer(adService)
+	server.Run(":8080")
 }
 
 func setInitialAdCatalog(adService application.AdService) {

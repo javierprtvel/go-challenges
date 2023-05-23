@@ -163,6 +163,77 @@ func TestInMemoryAdRepository_FindById(t *testing.T) {
 	}
 }
 
+func TestInMemoryAdRepository_FindByTitle(t *testing.T) {
+	type findByInput struct {
+		title       string
+		existingAds map[string]domain.Ad
+	}
+	now := time.Now()
+	existingAds := map[string]domain.Ad{
+		"1": {
+			Id:          "1",
+			Title:       "Title 1",
+			Description: "Description 1",
+			Price:       50,
+			Date:        now,
+		},
+		"2": {
+			Id:          "2",
+			Title:       "Title 2",
+			Description: "Description 2",
+			Price:       19,
+			Date:        now,
+		},
+		"3": {
+			Id:          "3",
+			Title:       "Title 3",
+			Description: "Description 3",
+			Price:       45,
+			Date:        now,
+		},
+	}
+	testCases := []struct {
+		name     string
+		input    findByInput
+		expected []domain.Ad
+	}{
+		{
+			name: "Happy Path",
+			input: findByInput{
+				title:       "Title 2",
+				existingAds: existingAds,
+			},
+			expected: []domain.Ad{
+				{
+					Id:          "2",
+					Title:       "Title 2",
+					Description: "Description 2",
+					Price:       19,
+					Date:        now,
+				},
+			},
+		},
+		{
+			name: "Not found",
+			input: findByInput{
+				title:       "Title Foo",
+				existingAds: existingAds,
+			},
+			expected: []domain.Ad{},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var inMemoryAdRepository inMemoryAdRepository = existingAds
+
+			actual := inMemoryAdRepository.FindByTitle(tc.input.title)
+
+			assert.Equal(t, tc.expected, actual)
+		})
+	}
+}
+
 func TestInMemoryAdRepository_Slice(t *testing.T) {
 	now := time.Now()
 	testCases := []struct {

@@ -6,25 +6,12 @@ import (
 	"time"
 )
 
-type AdController struct {
-	router    *gin.Engine
-	adService application.AdService
-}
-
-func NewAdController(adService application.AdService) AdController {
+func SetupServer(adService application.AdService) *gin.Engine {
 	router := gin.Default()
 	router.GET("/ads/:adId", handleGetAd(adService))
 	router.GET("/ads", handleGetSomeAds(adService))
 	router.POST("/ads", handleCreateAd(adService))
-
-	return AdController{
-		router:    router,
-		adService: adService,
-	}
-}
-
-func (adController AdController) Init() {
-	adController.router.Run("localhost:8080")
+	return router
 }
 
 func handleGetAd(adService application.AdService) gin.HandlerFunc {
@@ -46,15 +33,25 @@ func handleGetSomeAds(adService application.AdService) gin.HandlerFunc {
 
 func handleCreateAd(adService application.AdService) gin.HandlerFunc {
 	return func(context *gin.Context) {
-		var httpCreateAdRequest httpCreateAdRequest
-		context.BindJSON(&httpCreateAdRequest)
+		var httpCreateAdRequest HttpCreateAdRequest
+		err := context.BindJSON(&httpCreateAdRequest)
+		if err != nil {
+			return
+		}
+
 		createAdRequest := mapHttpCreateAdRequestToServiceRequest(httpCreateAdRequest)
-		adService.CreateAd(createAdRequest)
+		if err := adService.CreateAd(createAdRequest); err != nil {
+			context.JSON(409, gin.H{
+				"code":  409,
+				"title": "ad-already-exists",
+				"error": err.Error(),
+			})
+		}
 		context.Status(201)
 	}
 }
 
-type httpAdResponse struct {
+type HttpAdResponse struct {
 	Id          string    `json:"id"`
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
@@ -62,8 +59,24 @@ type httpAdResponse struct {
 	Date        time.Time `json:"date"`
 }
 
-func mapGetAdResponseToHttpResponse(gar application.GetAdResponse) httpAdResponse {
-	return httpAdResponse{
+type HttpAdsResponse struct {
+	Ads []HttpAdResponse `json:"ads"`
+}
+
+type HttpCreateAdRequest struct {
+	Title       string `json:"title" binding:"required"`
+	Description string `json:"description" binding:"required"`
+	Price       uint32 `json:"price" binding:"required"`
+}
+
+type HttpErrorResponse struct {
+	Code  uint32 `json:"code"`
+	Title string `json:"title"`
+	Error string `json:"error"`
+}
+
+func mapGetAdResponseToHttpResponse(gar application.GetAdResponse) HttpAdResponse {
+	return HttpAdResponse{
 		Id:          gar.Id,
 		Title:       gar.Title,
 		Description: gar.Description,
@@ -72,25 +85,15 @@ func mapGetAdResponseToHttpResponse(gar application.GetAdResponse) httpAdRespons
 	}
 }
 
-type httpAdsResponse struct {
-	Ads []httpAdResponse `json:"ads"`
-}
-
-func mapGetSomeAdsResponseToHttpResponse(gsar application.GetSomeAdsResponse) httpAdsResponse {
-	ads := make([]httpAdResponse, 0)
+func mapGetSomeAdsResponseToHttpResponse(gsar application.GetSomeAdsResponse) HttpAdsResponse {
+	ads := make([]HttpAdResponse, 0)
 	for _, gar := range gsar.Ads {
 		ads = append(ads, mapGetAdResponseToHttpResponse(gar))
 	}
-	return httpAdsResponse{ads}
+	return HttpAdsResponse{ads}
 }
 
-type httpCreateAdRequest struct {
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	Price       uint32 `json:"price"`
-}
-
-func mapHttpCreateAdRequestToServiceRequest(hcar httpCreateAdRequest) application.CreateAdRequest {
+func mapHttpCreateAdRequestToServiceRequest(hcar HttpCreateAdRequest) application.CreateAdRequest {
 	return application.CreateAdRequest{
 		Title:       hcar.Title,
 		Description: hcar.Description,

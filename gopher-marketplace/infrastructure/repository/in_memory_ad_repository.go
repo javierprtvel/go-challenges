@@ -36,6 +36,16 @@ func (ar inMemoryAdRepository) FindById(id string) domain.Ad {
 	}
 }
 
+func (ar inMemoryAdRepository) FindByTitle(title string) []domain.Ad {
+	var adsWithSameTitle = make([]domain.Ad, 0)
+	for _, ad := range ar {
+		if ad.Title == title {
+			adsWithSameTitle = append(adsWithSameTitle, ad)
+		}
+	}
+	return adsWithSameTitle
+}
+
 const sliceMaxSize = 5
 
 func (ar inMemoryAdRepository) Slice() []domain.Ad {

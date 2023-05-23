@@ -26,31 +26,61 @@ func TestAdService_CreateAd(t *testing.T) {
 	adRepository := repository.NewMockAdRepository(ctrl)
 	adService := AdService{adRepository}
 
-	request := CreateAdRequest{
-		Title:       "Title for Mock Test",
-		Description: "Description Anything",
-		Price:       99,
-	}
+	t.Run("Persist ad in the repository", func(t *testing.T) {
+		request := CreateAdRequest{
+			Title:       "Title for Mock Test",
+			Description: "Description Anything",
+			Price:       99,
+		}
 
-	mockAd := MockAd{
-		Title:       "Title for Mock Test",
-		Description: "Description Anything",
-		Price:       99,
-		Date:        time.Now(),
-	}
-	adRepository.
-		EXPECT().
-		Persist(gomock.All(mockAd)).
-		Return(
-			domain.Ad{
-				Id:          "15467",
-				Title:       "Title for Mock Test",
-				Description: "Description Anything",
-				Price:       99,
-				Date:        time.Now(),
+		adRepository.
+			EXPECT().
+			FindByTitle(request.Title).
+			Return([]domain.Ad{})
+		mockAd := MockAd{
+			Title:       "Title for Mock Test",
+			Description: "Description Anything",
+			Price:       99,
+			Date:        time.Now(),
+		}
+		adRepository.
+			EXPECT().
+			Persist(gomock.All(mockAd)).
+			Return(
+				domain.Ad{
+					Id:          "15467",
+					Title:       "Title for Mock Test",
+					Description: "Description Anything",
+					Price:       99,
+					Date:        time.Now(),
+				})
+
+		adService.CreateAd(request)
+	})
+
+	t.Run("Return an error if an ad with same title already exists", func(t *testing.T) {
+		request := CreateAdRequest{
+			Title:       "Title for Mock Test",
+			Description: "Description Anything",
+			Price:       99,
+		}
+
+		date, _ := time.Parse("2023-03-03 14:00:00.000", "2023-03-03 14:00:00.000")
+		adRepository.
+			EXPECT().
+			FindByTitle(request.Title).
+			Return([]domain.Ad{
+				{
+					Id:          "5dd980ae-2b31-4442-a010-6a7808b0961f",
+					Title:       "Title for Mock Test",
+					Description: "Another description",
+					Price:       56,
+					Date:        date,
+				},
 			})
 
-	adService.CreateAd(request)
+		adService.CreateAd(request)
+	})
 }
 
 func TestAdService_GetAd(t *testing.T) {

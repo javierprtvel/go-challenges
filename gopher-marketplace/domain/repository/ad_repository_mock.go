@@ -48,6 +48,20 @@ func (mr *MockAdRepositoryMockRecorder) FindById(id interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindById", reflect.TypeOf((*MockAdRepository)(nil).FindById), id)
 }
 
+// FindByTitle mocks base method.
+func (m *MockAdRepository) FindByTitle(title string) []domain.Ad {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindByTitle", title)
+	ret0, _ := ret[0].([]domain.Ad)
+	return ret0
+}
+
+// FindByTitle indicates an expected call of FindByTitle.
+func (mr *MockAdRepositoryMockRecorder) FindByTitle(title interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByTitle", reflect.TypeOf((*MockAdRepository)(nil).FindByTitle), title)
+}
+
 // Persist mocks base method.
 func (m *MockAdRepository) Persist(ad domain.Ad) domain.Ad {
 	m.ctrl.T.Helper()

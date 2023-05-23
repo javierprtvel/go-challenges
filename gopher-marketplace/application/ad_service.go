@@ -1,6 +1,7 @@
 package application
 
 import (
+	"fmt"
 	"github.com/google/uuid"
 	"github.mpi-internal.com/javier-porto/learning-go/domain"
 	"github.mpi-internal.com/javier-porto/learning-go/domain/repository"
@@ -33,7 +34,12 @@ func NewAdService(adRepository repository.AdRepository) AdService {
 	return AdService{adRepository}
 }
 
-func (adService AdService) CreateAd(request CreateAdRequest) {
+func (adService AdService) CreateAd(request CreateAdRequest) error {
+	title := request.Title
+	adsWithSameTitle := adService.repository.FindByTitle(title)
+	if len(adsWithSameTitle) > 0 {
+		return fmt.Errorf("an ad with title %s already exists", title)
+	}
 	adService.repository.Persist(domain.Ad{
 		Id:          uuid.NewString(),
 		Title:       request.Title,
@@ -41,6 +47,7 @@ func (adService AdService) CreateAd(request CreateAdRequest) {
 		Price:       request.Price,
 		Date:        time.Now(),
 	})
+	return nil
 }
 
 func (adService AdService) GetAd(request GetAdRequest) GetAdResponse {
