@@ -55,7 +55,8 @@ func TestAdService_CreateAd(t *testing.T) {
 					Date:        time.Now(),
 				})
 
-		adService.CreateAd(request)
+		err := adService.CreateAd(request)
+		assert.Nil(t, err)
 	})
 
 	t.Run("Return an error if an ad with same title already exists", func(t *testing.T) {
@@ -79,7 +80,24 @@ func TestAdService_CreateAd(t *testing.T) {
 				},
 			})
 
-		adService.CreateAd(request)
+		err := adService.CreateAd(request)
+		assert.NotNil(t, err)
+	})
+
+	t.Run("Return an error if the ad data is invalid", func(t *testing.T) {
+		request := CreateAdRequest{
+			Title:       "Title for Mock Test",
+			Description: "Lorem ipsum dolor sit aemet this description is so long that it won't fit in the database",
+			Price:       4449,
+		}
+
+		adRepository.
+			EXPECT().
+			FindByTitle(request.Title).
+			Return([]domain.Ad{})
+
+		err := adService.CreateAd(request)
+		assert.NotNil(t, err)
 	})
 }
 
@@ -90,30 +108,45 @@ func TestAdService_GetAd(t *testing.T) {
 	adService := AdService{adRepository}
 	now := time.Now()
 
-	request := GetAdRequest{Id: "4"}
+	t.Run("Retrieve an ad from the repository", func(t *testing.T) {
+		request := GetAdRequest{Id: "4"}
 
-	adRepository.
-		EXPECT().
-		FindById("4").
-		Return(
-			domain.Ad{
-				Id:          "4",
-				Title:       "Title for Mock Test",
-				Description: "Description of fourth ad",
-				Price:       15,
-				Date:        now,
-			})
+		adRepository.
+			EXPECT().
+			FindById("4").
+			Return(
+				&domain.Ad{
+					Id:          "4",
+					Title:       "Title for Mock Test",
+					Description: "Description of fourth ad",
+					Price:       15,
+					Date:        now,
+				})
 
-	actual := adService.GetAd(request)
+		actual := adService.GetAd(request)
 
-	expected := GetAdResponse{
-		Id:          "4",
-		Title:       "Title for Mock Test",
-		Description: "Description of fourth ad",
-		Price:       15,
-		Date:        now,
-	}
-	assert.Equal(t, expected, actual)
+		expected := &GetAdResponse{
+			Id:          "4",
+			Title:       "Title for Mock Test",
+			Description: "Description of fourth ad",
+			Price:       15,
+			Date:        now,
+		}
+		assert.Equal(t, expected, actual)
+	})
+
+	t.Run("Return nil if ad does not exist in the repository", func(t *testing.T) {
+		request := GetAdRequest{Id: "9"}
+
+		adRepository.
+			EXPECT().
+			FindById("9").
+			Return(nil)
+
+		actual := adService.GetAd(request)
+
+		assert.Nil(t, actual)
+	})
 }
 
 func TestAdService_GetSomeAds(t *testing.T) {

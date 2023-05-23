@@ -35,10 +35,10 @@ func (m *MockAdRepository) EXPECT() *MockAdRepositoryMockRecorder {
 }
 
 // FindById mocks base method.
-func (m *MockAdRepository) FindById(id string) domain.Ad {
+func (m *MockAdRepository) FindById(id string) *domain.Ad {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindById", id)
-	ret0, _ := ret[0].(domain.Ad)
+	ret0, _ := ret[0].(*domain.Ad)
 	return ret0
 }
 

@@ -25,14 +25,17 @@ func (ar inMemoryAdRepository) Persist(ad domain.Ad) domain.Ad {
 	}
 }
 
-func (ar inMemoryAdRepository) FindById(id string) domain.Ad {
-	ad := ar[id]
-	return domain.Ad{
-		Id:          ad.Id,
-		Title:       ad.Title,
-		Description: ad.Description,
-		Price:       ad.Price,
-		Date:        ad.Date,
+func (ar inMemoryAdRepository) FindById(id string) *domain.Ad {
+	if ad, ok := ar[id]; ok {
+		return &domain.Ad{
+			Id:          ad.Id,
+			Title:       ad.Title,
+			Description: ad.Description,
+			Price:       ad.Price,
+			Date:        ad.Date,
+		}
+	} else {
+		return nil
 	}
 }
 

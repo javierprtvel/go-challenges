@@ -120,7 +120,7 @@ func TestInMemoryAdRepository_FindById(t *testing.T) {
 	testCases := []struct {
 		name     string
 		input    findByInput
-		expected domain.Ad
+		expected *domain.Ad
 	}{
 		{
 			name: "Happy Path",
@@ -128,7 +128,7 @@ func TestInMemoryAdRepository_FindById(t *testing.T) {
 				id:          "1",
 				existingAds: existingAds,
 			},
-			expected: domain.Ad{
+			expected: &domain.Ad{
 				Id:          "1",
 				Title:       "Title 1",
 				Description: "Description 1",
@@ -142,13 +142,7 @@ func TestInMemoryAdRepository_FindById(t *testing.T) {
 				id:          "6",
 				existingAds: existingAds,
 			},
-			expected: domain.Ad{
-				Id:          "",
-				Title:       "",
-				Description: "",
-				Price:       0,
-				Date:        time.Time{},
-			},
+			expected: nil,
 		},
 	}
 

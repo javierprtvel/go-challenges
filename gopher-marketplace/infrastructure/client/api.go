@@ -1,6 +1,7 @@
 package client
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.mpi-internal.com/javier-porto/learning-go/application"
 	"time"
@@ -17,9 +18,18 @@ func SetupServer(adService application.AdService) *gin.Engine {
 func handleGetAd(adService application.AdService) gin.HandlerFunc {
 	return func(context *gin.Context) {
 		adId := context.Param("adId")
+
 		getAdResponse := adService.GetAd(application.GetAdRequest{Id: adId})
-		httpAdResponse := mapGetAdResponseToHttpResponse(getAdResponse)
-		context.JSON(200, httpAdResponse)
+		if getAdResponse == nil {
+			context.JSON(404, HttpErrorResponse{
+				Code:  404,
+				Title: "ad-not-found",
+				Error: fmt.Sprintf("ad with id %s not found", adId),
+			})
+		} else {
+			httpAdResponse := mapGetAdResponseToHttpResponse(*getAdResponse)
+			context.JSON(200, httpAdResponse)
+		}
 	}
 }
 
@@ -41,10 +51,10 @@ func handleCreateAd(adService application.AdService) gin.HandlerFunc {
 
 		createAdRequest := mapHttpCreateAdRequestToServiceRequest(httpCreateAdRequest)
 		if err := adService.CreateAd(createAdRequest); err != nil {
-			context.JSON(409, gin.H{
-				"code":  409,
-				"title": "ad-already-exists",
-				"error": err.Error(),
+			context.JSON(409, HttpErrorResponse{
+				Code:  409,
+				Title: "ad-already-exists",
+				Error: err.Error(),
 			})
 		}
 		context.Status(201)

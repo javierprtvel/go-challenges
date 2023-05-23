@@ -79,6 +79,29 @@ func TestPostAd(t *testing.T) {
 		}
 		assert.Equal(t, expectedResponse, responseBody)
 	})
+
+	t.Run("API returns Unprocessable Entity if the ad entity contains an invalid description", func(t *testing.T) {
+		httpRequest := client.HttpCreateAdRequest{
+			Title:       "Invalid Ad",
+			Description: "Lorem ipsum dolor sit aemet this description is so long that it won't fit in the database",
+			Price:       104,
+		}
+		jsonValue, _ := json.Marshal(httpRequest)
+		req, _ := http.NewRequest("POST", "/ads", bytes.NewBuffer(jsonValue))
+
+		w := httptest.NewRecorder()
+		server.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusUnprocessableEntity, w.Code)
+		var responseBody client.HttpErrorResponse
+		json.Unmarshal(w.Body.Bytes(), &responseBody)
+		expectedResponse := client.HttpErrorResponse{
+			Code:  422,
+			Title: "ad-data-is-invalid",
+			Error: "the ad description cannot be longer than 50 characters",
+		}
+		assert.Equal(t, expectedResponse, responseBody)
+	})
 }
 
 func TestGetAd(t *testing.T) {
@@ -118,6 +141,24 @@ func TestGetAd(t *testing.T) {
 		assert.Equal(t, expectedResponse.Title, responseBody.Title)
 		assert.Equal(t, expectedResponse.Description, responseBody.Description)
 		assert.Equal(t, expectedResponse.Price, responseBody.Price)
+	})
+
+	t.Run("API returns Not Found if an ad with the requested id does not exist", func(t *testing.T) {
+		req, _ := http.NewRequest("GET", "/ads/272f39e9-a52a-4576-b804-f9977bbfd402", nil)
+
+		w := httptest.NewRecorder()
+		server.ServeHTTP(w, req)
+
+		responseStatus := w.Code
+		assert.Equal(t, http.StatusNotFound, responseStatus)
+		var responseBody client.HttpErrorResponse
+		json.Unmarshal(w.Body.Bytes(), &responseBody)
+		expectedResponse := client.HttpErrorResponse{
+			Code:  404,
+			Title: "ad-not-found",
+			Error: fmt.Sprintf("ad with id %s not found", "272f39e9-a52a-4576-b804-f9977bbfd402"),
+		}
+		assert.Equal(t, expectedResponse, responseBody)
 	})
 }
 

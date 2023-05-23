@@ -40,19 +40,20 @@ func (adService AdService) CreateAd(request CreateAdRequest) error {
 	if len(adsWithSameTitle) > 0 {
 		return fmt.Errorf("an ad with title %s already exists", title)
 	}
-	adService.repository.Persist(domain.Ad{
-		Id:          uuid.NewString(),
-		Title:       request.Title,
-		Description: request.Description,
-		Price:       request.Price,
-		Date:        time.Now(),
-	})
+	err, ad := domain.NewAd(uuid.NewString(), request.Title, request.Description, request.Price)
+	if err != nil {
+		return err
+	}
+	adService.repository.Persist(*ad)
 	return nil
 }
 
-func (adService AdService) GetAd(request GetAdRequest) GetAdResponse {
+func (adService AdService) GetAd(request GetAdRequest) *GetAdResponse {
 	ad := adService.repository.FindById(request.Id)
-	return GetAdResponse{
+	if ad == nil {
+		return nil
+	}
+	return &GetAdResponse{
 		Id:          ad.Id,
 		Title:       ad.Title,
 		Description: ad.Description,
